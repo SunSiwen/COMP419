@@ -1,8 +1,6 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Scanner;
 
 public class backtrack {
@@ -10,7 +8,7 @@ public class backtrack {
     public static void main(String[] args) {
         System.out.println("please give me a puzzle(File path): ");
         String file = new Scanner(System.in).nextLine();
-        System.out.println("");
+        System.out.println();
         readFromFile(file);
 
     }
@@ -20,7 +18,7 @@ public class backtrack {
         boolean flag = false;
         try {
             bf = new BufferedReader(new FileReader(file));
-            String line = null;
+            String line;
             while ((line = bf.readLine()) != null) {
                 if (line.startsWith("#")) {
                     flag = !flag;
@@ -65,10 +63,133 @@ public class backtrack {
         }
 
         generateConstrainGraph(graph);
+        recursiveBackTracking(0, 0, board, graph);
+    }
+
+    private static void recursiveBackTracking(int i, int j, char[][] board, Node[][] graph) {
+        if (j == board[i].length) {
+            j = 0;
+            i++;
+        }
+        if (i == board.length) {
+            if (check(graph)) {
+                System.out.println("\n# Solution");
+                for (char[] chars : board) {
+                    for (char aChar : chars) {
+                        System.out.print(aChar + " ");
+                    }
+                    System.out.println();
+                }
+            }
+            return;
+        }
+
+        if (!graph[i][j].isWall && !graph[i][j].isBright) {
+            for (int k = 0; k < 2; k++) {
+                graph[i][j].value = k;
+                if (k == 1) {
+                    board[i][j] = 'b';
+                    switchOn(i, j, graph);
+                }
+                recursiveBackTracking(i, j + 1, board, graph);
+                board[i][j] = '_';
+                switchOff(i, j, graph);
+            }
+        } else {
+            recursiveBackTracking(i, j + 1, board, graph);
+        }
+
+    }
+
+    private static void switchOn(int i, int j, Node[][] graph) {
+        graph[i][j].isBright = true;
+        graph[i][j].value = 1;
+        ArrayList<Constrain> constrains = graph[i][j].constrains;
+        for (Constrain constrain : constrains) {
+            if (constrain instanceof PlaceConstrain) {
+                PlaceConstrain p = (PlaceConstrain) constrain;
+                Node tail = p.tail;
+                tail.isBright = true;
+            }
+        }
+    }
+
+    private static void switchOff(int i, int j, Node[][] graph) {
+        graph[i][j].value = 0;
+        graph[i][j].isBright = false;
+        int cnt = 0;
+        ArrayList<Constrain> constrains = graph[i][j].constrains;
+        for (Constrain constrain : constrains) {
+            if (constrain instanceof PlaceConstrain) {
+                PlaceConstrain p = (PlaceConstrain) constrain;
+                Node tail = p.tail;
+                if(tail.value!=0) cnt++;
+                for (Constrain c : tail.constrains) {
+                    if (c instanceof PlaceConstrain) {
+                        PlaceConstrain q = (PlaceConstrain) c;
+                        if (q.tail.value != 0) {
+                            tail.isBright = true;
+                            break;
+                        }
+                        tail.isBright = false;
+                    }
+                }
+            }
+        }
+        graph[i][j].isBright = cnt!=0;
+    }
+
+    private static boolean check(Node[][] graph) {
+        for (Node[] nodes : graph) {
+            for (Node node : nodes) {
+                for (Constrain constrain : node.constrains) {
+                    if (!constrain.check()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     private static void generateConstrainGraph(Node[][] graph) {
 
+        for (int i = 0; i < graph.length; i++) {
+            for (int j = 0; j < graph[i].length; j++) {
+                if (graph[i][j].isWall) {
+                    NumConstrain numConstrain = new NumConstrain(graph[i][j].value);
+                    if (i > 0 && !graph[i - 1][j].isWall) {
+                        numConstrain.nodes.add(graph[i - 1][j]);
+                    }
+                    if (i < graph.length - 1 && !graph[i + 1][j].isWall) {
+                        numConstrain.nodes.add(graph[i + 1][j]);
+                    }
+                    if (j > 0 && !graph[i][j - 1].isWall) {
+                        numConstrain.nodes.add(graph[i][j - 1]);
+                    }
+                    if (j < graph[0].length - 1 && !graph[i][j + 1].isWall) {
+                        numConstrain.nodes.add(graph[i][j + 1]);
+                    }
+
+                    for (Node node : numConstrain.nodes) {
+                        node.constrains.add(numConstrain);
+                    }
+                } else {
+                    for (int k = i - 1; k >= 0 && !graph[k][j].isWall; k--) {
+                        graph[i][j].constrains.add(new PlaceConstrain(graph[i][j], graph[k][j]));
+                    }
+                    for (int k = i + 1; k < graph.length && !graph[k][j].isWall; k++) {
+                        graph[i][j].constrains.add(new PlaceConstrain(graph[i][j], graph[k][j]));
+                    }
+                    for (int k = j - 1; k >= 0 && !graph[i][k].isWall; k--) {
+                        graph[i][j].constrains.add(new PlaceConstrain(graph[i][j], graph[i][k]));
+                    }
+                    for (int k = j + 1; k < graph[i].length && !graph[i][k].isWall; k++) {
+                        graph[i][j].constrains.add(new PlaceConstrain(graph[i][j], graph[i][k]));
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -76,15 +197,27 @@ class Node {
     boolean isWall;
     int value;
     boolean isBright;
-    HashSet<Integer> domain;
+    //    HashSet<Integer> domain;
+    ArrayList<Constrain> constrains;
 
     public Node(boolean isWall, int value) {
         this.isWall = isWall;
         this.value = value;
-        isBright = false;
-        domain = new HashSet<>();
-        domain.add(0);
-        domain.add(1);
+        this.isBright = false;
+//        domain = new HashSet<>();
+//        domain.add(0);
+//        domain.add(1);
+        constrains = new ArrayList<>();
+    }
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "isWall=" + isWall +
+                ", value=" + value +
+                ", isBright=" + isBright +
+                ", constrains=" + constrains +
+                '}';
     }
 }
 
@@ -102,10 +235,6 @@ class NumConstrain implements Constrain {
         nodes = new ArrayList<>();
     }
 
-    public void addNode(Node e) {
-        nodes.add(e);
-    }
-
     @Override
     public boolean check() {
         int cnt = 0;
@@ -113,6 +242,14 @@ class NumConstrain implements Constrain {
             cnt += node.value;
         }
         return cnt == total;
+    }
+
+    @Override
+    public String toString() {
+        return "NumConstrain{" +
+                "total=" + total +
+                ", nodes=" + nodes.size() +
+                '}';
     }
 }
 
@@ -128,11 +265,14 @@ class PlaceConstrain implements Constrain {
 
     @Override
     public boolean check() {
-        return (head.value & tail.value) == 0;
+        return (head.value & tail.value) == 0 && head.isBright && tail.isBright;
     }
-}
 
-class ConstrainGraph {
-    HashMap<Node, ArrayList<Constrain>> constrains;
-
+    @Override
+    public String toString() {
+        return "PlaceConstrain{" +
+                "head=" + head.value +
+                ", tail=" + tail.value +
+                '}';
+    }
 }
