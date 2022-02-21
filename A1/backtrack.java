@@ -227,6 +227,7 @@ public class backtrack {
             System.out.println("\nplease give me a puzzle(File path): ");
             String file = new Scanner(System.in).nextLine();
             if ("quit".equals(file)) {
+                System.out.println("\nProgram completed normally.");
                 return;
             }
             System.out.println();
