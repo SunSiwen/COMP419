@@ -121,8 +121,9 @@ public class backtrack {
 
     /**
      * the core method to do back tracking by DFS
+     *
      * @param undecided : the priority queue contains the undecided nodes
-     * @param graph : the entire nodes
+     * @param graph     : the entire nodes
      * @return : whether this try is valid
      */
     private static boolean recursiveBackTracking(PriorityQueue<Node> undecided, Node[][] graph) {
@@ -219,31 +220,10 @@ public class backtrack {
         return false;
     }
 
-    /**
-     * used for checking every selection
-     * @param poll: selected node
-     * @return : whether meets the minimum constraints
-     */
-    private static boolean AC3Check(Node poll) {
-        return partCheck(poll.getWallConstrains()) && partCheck(poll.getPlaceConstrains());
-    }
-
-    /**
-     * local check for a node's constraints
-     * @param cs : a list of constraints of this node
-     * @return : whether these constraints meet
-     */
-    private static boolean partCheck(ArrayList<Constrain> cs) {
-        for (Constrain c : cs) {
-            if (!c.partCheck()) {
-                return false;
-            }
-        }
-        return true;
-    }
 
     /**
      * global check for all constraints
+     *
      * @param cs : a list of constraints
      * @return : whether all constraints meet
      */
@@ -258,7 +238,8 @@ public class backtrack {
 
     /**
      * do some pre handle before calculating to accelerate
-     * @param graph : the nodes' info
+     *
+     * @param graph     : the nodes' info
      * @param undecided : the priority queue which contains undecided nodes
      */
     private static void preHandle(Node[][] graph, PriorityQueue<Node> undecided) {
