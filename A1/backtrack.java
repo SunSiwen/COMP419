@@ -4,8 +4,8 @@ import java.util.*;
 
 /**
  * -----------------------------------------
- * NAME: to be added, Siwen Sun
- * STUDENT NUMBER: to be added, 7898970
+ * NAME: Ran Shi, Siwen Sun
+ * STUDENT NUMBER: 7814643, 7898970
  * COURSE: COMP 4190, SECTION: A01
  * INSTRUCTOR: Cuneyt Akcora
  * ASSIGNMENT: Assignment 1 -CSP, QUESTION: part1-backtrace
@@ -51,6 +51,10 @@ public class backtrack {
             branch = 0;
             System.out.println("\nplease give me a puzzle(File path): ");
             String file = new Scanner(System.in).nextLine();
+
+            System.out.println();
+            System.out.println("Received input. Start processing");
+
             if ("quit".equals(file)) {
                 System.out.println("\nProgram completed normally.");
                 return;
