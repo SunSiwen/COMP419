@@ -45,6 +45,7 @@ public class forward_checking {
             branch = 0;
             System.out.println("\nplease give me a puzzle(File path): ");
             String file = new Scanner(System.in).nextLine();
+            //String file = "C:\\Users\\rshi1\\Documents\\UM\\2022Winter\\COMP4190\\A1\\COMP419\\A1\\testQ2.txt";
 
             System.out.println();
             System.out.println("Received input. Start processing");
@@ -108,13 +109,19 @@ public class forward_checking {
                 }
             }
         }
-
+        branch = 0;
+        long startTime = System.currentTimeMillis();
         wallConstrains = new ArrayList<>();
         placeConstrains = new ArrayList<>();
         generateConstrainGraph(graph);
         PriorityQueue<Node> undecided = factory.getInstance();
         preHandle(graph, undecided);
         recursiveForwardCheck(undecided, graph);
+
+        long endTime = System.currentTimeMillis();
+        int counter = wallCounter(graph);
+        long spend = endTime - startTime;
+        System.out.println("SPEND " + spend + "MS WITH " + counter + " WALLS");
     }
 
     /**
@@ -349,5 +356,22 @@ public class forward_checking {
                 }
             }
         }
+    }
+
+    /**
+     * helper, to count # of walls
+     * @param graph : the entire nodes
+     * @return : # of walls
+     */
+    private static int wallCounter(Node[][] graph){
+        int counter = 0;
+        for (Node[] nodes : graph) {
+            for (Node n : nodes) {
+                if (n.isWall()) {
+                    counter++;
+                }
+            }
+        }
+        return counter;
     }
 }

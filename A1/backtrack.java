@@ -115,12 +115,18 @@ public class backtrack {
             }
         }
 
+        branch = 0;
+        long startTime = System.currentTimeMillis();
         wallConstrains = new ArrayList<>();
         placeConstrains = new ArrayList<>();
         generateConstrainGraph(graph);
         PriorityQueue<Node> undecided = factory.getInstance();
         preHandle(graph, undecided);
         recursiveBackTracking(undecided, graph);
+        long endTime = System.currentTimeMillis();
+        int counter = wallCounter(graph);
+        long spend = endTime - startTime;
+        System.out.println("SPEND " + spend + "MS WITH " + counter + " WALLS");
     }
 
     /**
@@ -339,5 +345,22 @@ public class backtrack {
                 }
             }
         }
+    }
+
+    /**
+     * helper, to count # of walls
+     * @param graph : the entire nodes
+     * @return : # of walls
+     */
+    private static int wallCounter(Node[][] graph){
+        int counter = 0;
+        for (Node[] nodes : graph) {
+            for (Node n : nodes) {
+                if (n.isWall()) {
+                    counter++;
+                }
+            }
+        }
+        return counter;
     }
 }
