@@ -4,8 +4,8 @@ import java.util.*;
 
 /**
  * -----------------------------------------
- * NAME: to be added, Siwen Sun
- * STUDENT NUMBER: to be added, 7898970
+ * NAME: Ran Shi, Siwen Sun
+ * STUDENT NUMBER: 7814643, 7898970
  * COURSE: COMP 4190, SECTION: A01
  * INSTRUCTOR: Cuneyt Akcora
  * ASSIGNMENT: Assignment 1 -CSP, QUESTION: part2-forward_checking
@@ -45,6 +45,11 @@ public class forward_checking {
             branch = 0;
             System.out.println("\nplease give me a puzzle(File path): ");
             String file = new Scanner(System.in).nextLine();
+            //String file = "C:\\Users\\rshi1\\Documents\\UM\\2022Winter\\COMP4190\\A1\\COMP419\\A1\\testQ2.txt";
+
+            System.out.println();
+            System.out.println("Received input. Start processing");
+
             if ("quit".equals(file)) {
                 System.out.println("\nProgram completed normally.");
                 return;
@@ -104,13 +109,19 @@ public class forward_checking {
                 }
             }
         }
-
+        branch = 0;
+        long startTime = System.currentTimeMillis();
         wallConstrains = new ArrayList<>();
         placeConstrains = new ArrayList<>();
         generateConstrainGraph(graph);
         PriorityQueue<Node> undecided = factory.getInstance();
         preHandle(graph, undecided);
-        recursiveBackTracking(undecided, graph);
+        recursiveForwardCheck(undecided, graph);
+
+        long endTime = System.currentTimeMillis();
+        int counter = wallCounter(graph);
+        long spend = endTime - startTime;
+        System.out.println("SPEND " + spend + "MS WITH " + counter + " WALLS");
     }
 
     /**
@@ -119,7 +130,7 @@ public class forward_checking {
      * @param graph : the entire nodes
      * @return : whether this try is valid
      */
-    private static boolean recursiveBackTracking(PriorityQueue<Node> undecided, Node[][] graph) {
+    private static boolean recursiveForwardCheck(PriorityQueue<Node> undecided, Node[][] graph) {
 
         branch++; // increment for every selection
         if (undecided.isEmpty()) {// if there is no undecided node, global check
@@ -179,7 +190,7 @@ public class forward_checking {
                 //generate a new priority queue
                 PriorityQueue<Node> p1 = factory.getInstance();
                 p1.addAll(undecided);
-                if (recursiveBackTracking(p1, graph)) {//try the following node
+                if (recursiveForwardCheck(p1, graph)) {//try the following node
                     return true;
                 } else {
                     //back track
@@ -210,7 +221,7 @@ public class forward_checking {
             //remove the other option
             boolean remove = poll.getOptions().remove(1);
             if (AC3Check(poll)) {//local check
-                if (recursiveBackTracking(undecided, graph)) {//try the following node
+                if (recursiveForwardCheck(undecided, graph)) {//try the following node
                     return true;
                 } else {
                     //put back
@@ -345,5 +356,22 @@ public class forward_checking {
                 }
             }
         }
+    }
+
+    /**
+     * helper, to count # of walls
+     * @param graph : the entire nodes
+     * @return : # of walls
+     */
+    private static int wallCounter(Node[][] graph){
+        int counter = 0;
+        for (Node[] nodes : graph) {
+            for (Node n : nodes) {
+                if (n.isWall()) {
+                    counter++;
+                }
+            }
+        }
+        return counter;
     }
 }
