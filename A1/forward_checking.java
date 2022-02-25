@@ -43,9 +43,8 @@ public class forward_checking {
         //read user input which is the file path or quit
         while (true) {
             branch = 0;
-            System.out.println("\nplease give me a puzzle(File path): ");
+            System.out.println("\nPlease give me a puzzle(File path): ");
             String file = new Scanner(System.in).nextLine();
-            //String file = "C:\\Users\\rshi1\\Documents\\UM\\2022Winter\\COMP4190\\A1\\COMP419\\A1\\testQ2.txt";
 
             System.out.println();
             System.out.println("Received input. Start processing");

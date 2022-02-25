@@ -9,7 +9,13 @@
  */
 
  Q1:
-
+ 
+ /**
+ * -----------------------------------------
+ * Output Data
+ * -----------------------------------------
+ */
+ 
    6*6
 Algorithm Heuristic  Average      1         2         3         4         5         6         7         8         9         10
 Back-         H1       22.7       20        18        21        52        18        18        19        19        23        19
@@ -37,7 +43,91 @@ Forward       H1       77.3       70        71        61        68        83    
 check         H2      176.1      163       177        74       486       197        68       240       202        65        89
               H3       83.9      101        63        61       126        81        62       145        75        62        63
 
+ /**
+ * -----------------------------------------
+ * Average Difference in Percentage
+ * -----------------------------------------
+ */
+                    Difference Average      %
+6*6       H1           1.6       21.9     7.31%
+          H2           5.8       21.4     27.10%
+          H3           1.8       19.5     9.23%
+                    Difference Average      %
+8*8       H1          167.6      121     138.51%
+          H2          754.2     417.9    180.47%
+          H3           98.7     85.35    115.64%
+                    Difference Average      %
+10*10     H1         153163.7  76659.15  199.80%
+          H2        1067661.8   534007   199.93%
+          H3         265081.4  132624.6  199.87%
+
+
 
  Q2:
  
+ /**
+ * -----------------------------------------
+ * Output Data
+ * -----------------------------------------
+ */
  
+ 12 Walls                          Average                          1                             2                             3
+    Algorithm      Heuristic       #Nodes          Time          #Nodes          Time          #Nodes          Time          #Nodes          Time
+  Back-tracking       H1        246240014.33     34413.67         83025            9          709134966        99328        29502052         3904
+                      H2        298429605.00     243186.00      399060960       436725         8657974         5278         487569881       287555
+                      H3         17233360.00      3820.67        891813           202         48229603         10653         2578664          607
+  Forward check       H1           8627.00         14.33           326             2            24992           39             563             2
+                      H2          128138.00       1137.00        348519          3087            655             8            35240           316
+                      H3           543.67          11.00           277            18            1050            11             304             4
+
+ 24 Walls                          Average                          1                             2                             3
+    Algorithm      Heuristic       #Nodes          Time          #Nodes          Time          #Nodes          Time          #Nodes          Time
+  Back-tracking       H1         37405712.00      4697.33       95864889         12055         1805190          377         14547057         1660
+                      H2        714879398.00     384190.00      238592333       170106        72766387         50839       1833279474       931625
+                      H3         83458088.00     15205.67       134111487        24500        10949287         2524         105313490        18593
+  Forward check       H1           5673.33         21.67           203            16            1390            25            15427           24
+                      H2          697336.33       3170.00         37012           329           11702           55           2043295         9126
+                      H3          16184.00         78.67          3354            48            1069             7            44129           181
+
+ 48 Walls                          Average                          1                             2                             3
+    Algorithm      Heuristic       #Nodes          Time          #Nodes          Time          #Nodes          Time          #Nodes          Time
+  Back-tracking       H1         9592126.33       926.33        16419145         2005          3084221          48           9273013          726
+                      H2        127479107.33     63591.33       304888988       134592        15886645         4647         61661689         51535
+                      H3         15859281.67      3006.33       44047297         8155          3214682          763          315866           101
+  Forward check       H1           200.67          9.00            179            16             320             7             103             4
+                      H2           637.00          7.33            986            12             522             4             403             6
+                      H3           141.67          2.00            130             2             197             2             98              2
+
+ /**
+ * -----------------------------------------
+ * Average Difference in Percentage
+ * -----------------------------------------
+ */
+
+12 Walls         Difference                      Average                          %
+                   #Nodes          Time          #Nodes          Time          #Nodes          Time
+                 246231387.33       34399.33   123124320.67       17214.00         199.99%        199.83%
+                 298301467.00      242049.00   149278871.50      122161.50         199.83%        198.14%
+                  17232816.33        3809.67     8616951.83        1915.83         199.99%        198.85%
+24 Walls         Difference                      Average                          %
+                   #Nodes          Time          #Nodes          Time          #Nodes          Time
+                  37400038.67        4675.67    18705692.67        2359.50         199.94%        198.16%
+                 714182061.67      381020.00   357788367.17      193680.00         199.61%        196.73%
+                  83441904.00       15127.00    41737136.00        7642.17         199.92%        197.94%
+48 Walls         Difference                      Average                          %
+                   #Nodes          Time          #Nodes          Time          #Nodes          Time
+                   9591925.67         917.33     4796163.50         467.67         199.99%        196.15%
+                 127478470.33       63584.00    63739872.17       31799.33         200.00%        199.95%
+                  15859140.00        3004.33     7929711.67        1504.17         200.00%        199.73%
+
+
+For playing field size 6*6, both two algorithms performed well. While the number of nodes used in the Back-tracking
+Algorithm increased substantially as the size grew, the Forward Check Algorithm still kept an extremely low cost.
+For playing field size 10*10, the number of nodes used in the Back-tracking Algorithm rise to almost 6000 times the
+one in the Forward Check Algorithm, which has a 199.9% average difference.
+
+For a given playing field size (12*12), the total number of walls influence did influence the runtime of the algorithm.
+Compared with all 3 groups of data, it is easy to observe that the Back-tracking Algorithm always took a quite long
+time, especially using the heuristic combination H2. The average difference of runtime remains above 196%.
+
+In general, Forward Check Algorithm performed better. 

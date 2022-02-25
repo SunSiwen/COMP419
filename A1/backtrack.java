@@ -49,7 +49,7 @@ public class backtrack {
         //read user input which is the file path or quit
         while (true) {
             branch = 0;
-            System.out.println("\nplease give me a puzzle(File path): ");
+            System.out.println("\nPlease give me a puzzle(File path): ");
             String file = new Scanner(System.in).nextLine();
 
             System.out.println();
