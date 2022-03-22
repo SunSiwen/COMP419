@@ -314,6 +314,8 @@ public class Bayesian {
             //put back to initial factor list
             Factor factor = containsVariable.get(0);
             factorList.add(sumout(factor, variable));
+            factor.getVariables().remove(variable);
+            System.out.println("After eliminate Variable : " + variable.getName() + " \nthe probability is " + factor.getProb() + "\n");
         }
 
         //multiply by query variables
@@ -355,6 +357,17 @@ class Variable {
 
     public Variable(String name) {
         this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return "Variable{" +
+                "name='" + name + '\'' +
+                '}';
     }
 }
 
@@ -430,6 +443,13 @@ class Factor {
         return offsets;
     }
 
+    @Override
+    public String toString() {
+        return "Factor{" +
+                "variables=" + variables +
+                ", prob=" + prob +
+                '}';
+    }
 }
 
 
