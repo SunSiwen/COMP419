@@ -3,6 +3,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.StringJoiner;
 
 /**
  * -----------------------------------------
@@ -432,15 +433,10 @@ class Factor {
         return prob;
     }
 
-    public String printProb(){
-        String result = "[ ";
-        for(int i=0;i<prob.size();i++){
-            String temp = String.format("%.5f", prob.get(i));
-            result += temp+" ";
-        }
-        result += "]";
-
-        return result;
+    public String printProb() {
+        StringJoiner stringJoiner = new StringJoiner(", ");
+        prob.forEach(k -> stringJoiner.add(String.format("%.5f", k)));
+        return "[" + stringJoiner + "]";
     }
 
     public void setProb(ArrayList<Double> prob) {
