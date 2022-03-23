@@ -1,3 +1,5 @@
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +17,8 @@ import java.util.Collections;
  * -----------------------------------------
  */
 public class Bayesian {
+
+    private final static int VALID_BIT = 5;
 
     public static void main(String[] args) {
         //construct the travel factor
@@ -97,7 +101,7 @@ public class Bayesian {
         System.out.println("Question 1 :=====================");
         Factor observe = observe(sumout(multiply(TRAVEL, FRAUD), travel), fraud, 1);
         System.out.println("P(+fraud) = " + observe.getProb().get(0));
-        System.out.println("*********************************");
+        System.out.println("*********************************\n");
 
         //solve the question 2
         System.out.println("Question 2 :=====================");
@@ -260,7 +264,7 @@ public class Bayesian {
         //calculate the sum
         double sum = prob.stream().mapToDouble(k -> k).sum();
         //multiply 1/sum
-        prob.forEach(k -> newProb.add(k / sum));
+        prob.forEach(k -> newProb.add(roundForDouble(k / sum)));
         factor.setProb(newProb);
         return factor;
     }
@@ -342,6 +346,17 @@ public class Bayesian {
         Factor factor = factorList.get(0);
         //normalize and return
         return normalize(factor);
+    }
+
+
+    /**
+     * @param data : a double data
+     * @return double : a double data after rounding
+     * @author Siwen Sun
+     * @date 2022/3/22 20:13
+     */
+    private static double roundForDouble(double data) {
+        return new BigDecimal(data).setScale(VALID_BIT, RoundingMode.HALF_UP).doubleValue();
     }
 }
 
