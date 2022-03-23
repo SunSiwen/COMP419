@@ -434,9 +434,9 @@ class Factor {
     }
 
     public String printProb() {
-        StringJoiner stringJoiner = new StringJoiner(", ");
+        StringJoiner stringJoiner = new StringJoiner(", ", "[", "]");
         prob.forEach(k -> stringJoiner.add(String.format("%.5f", k)));
-        return "[" + stringJoiner + "]";
+        return stringJoiner.toString();
     }
 
     public void setProb(ArrayList<Double> prob) {

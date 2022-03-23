@@ -1,6 +1,5 @@
 out:
-	javac backtrack.java
-	javac forward_checking.java
+	javac Bayesian.java
 
 clean:
 	rm -f *.class
