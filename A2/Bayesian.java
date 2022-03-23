@@ -21,14 +21,17 @@ public class Bayesian {
     private final static int VALID_BIT = 5;
 
     public static void main(String[] args) {
-        //construct the travel factor
+        // Code for Q2
+
+        // Load input then create BN net
+        // Construct the travel factor
         Factor TRAVEL = new Factor();
         Variable travel = new Variable("travel");
         TRAVEL.getVariables().add(travel);
         TRAVEL.getProb().add(0.95);
         TRAVEL.getProb().add(0.05);
 
-        //construct the fraud factor
+        // Construct the fraud factor
         Factor FRAUD = new Factor();
         Variable fraud = new Variable("fraud");
         FRAUD.getVariables().add(travel);
@@ -38,7 +41,7 @@ public class Bayesian {
         FRAUD.getProb().add(0.99);
         FRAUD.getProb().add(0.01);
 
-        //construct the ip factor
+        // Construct the ip factor
         Factor IP = new Factor();
         Variable ip = new Variable("ip");
         Variable oc = new Variable("oc");
@@ -54,7 +57,7 @@ public class Bayesian {
         IP.getProb().add(0.98);
         IP.getProb().add(0.02);
 
-        //construct the fp factor
+        // Construct the fp factor
         Factor FP = new Factor();
         Variable fp = new Variable("fp");
         FP.getVariables().add(travel);
@@ -69,13 +72,13 @@ public class Bayesian {
         FP.getProb().add(0.1);
         FP.getProb().add(0.9);
 
-        //construct the oc factor
+        // Construct the oc factor
         Factor OC = new Factor();
         OC.getVariables().add(oc);
         OC.getProb().add(0.3);
         OC.getProb().add(0.7);
 
-        //construct the crp factor
+        // Construct the crp factor
         Factor CRP = new Factor();
         Variable crp = new Variable("crp");
         CRP.getVariables().add(oc);
@@ -85,30 +88,30 @@ public class Bayesian {
         CRP.getProb().add(0.9);
         CRP.getProb().add(0.1);
 
-        //create the observation evidences
+        // Create the observation evidences
         Evidence e_fp = new Evidence(fp, 1);
         Evidence e_ip = new Evidence(ip, 0);
         Evidence e_crp = new Evidence(crp, 1);
 
-        //the lists for inference
+        // Create the lists for inference
         ArrayList<Factor> factors = new ArrayList<>(Arrays.asList(TRAVEL, FP, FRAUD, OC, IP, CRP));
         ArrayList<Variable> queryVariables = new ArrayList<>(Collections.singletonList(fraud));
         ArrayList<Variable> orderedListOfHiddenVariables = new ArrayList<>(Arrays.asList(travel, oc));
         ArrayList<Evidence> evidenceList = new ArrayList<>(Arrays.asList(e_fp, e_ip, e_crp));
 
 
-        //solve the question 1
-        System.out.println("Question 1 :=====================");
+        // Solve the first question
+        System.out.println("Question 2-b(i) :======================");
         Factor observe = observe(sumout(multiply(TRAVEL, FRAUD), travel), fraud, 1);
         System.out.println("P(+fraud) = " + observe.getProb().get(0));
-        System.out.println("*********************************\n");
+        System.out.println("***************************************\n");
 
-        //solve the question 2
-        System.out.println("Question 2 :=====================");
+        // Solve the second question
+        System.out.println("Question 2-b(ii) :=====================");
         Factor inference = inference(factors, queryVariables, orderedListOfHiddenVariables, evidenceList);
         System.out.println("P(¬fraud | fp, ¬ip, crp) = " + inference.getProb().get(0));
         System.out.println("P( fraud | fp, ¬ip, crp) = " + inference.getProb().get(1));
-        System.out.println("*********************************");
+        System.out.println("***************************************");
 
     }
 
@@ -277,7 +280,7 @@ public class Bayesian {
      * @param orderedListOfHiddenVariables : order of variables elimination
      * @param evidenceList                 : observed variables
      * @return Factor : the result
-     * @author Siwen Sun
+     * @author Siwen Sun, Ran Shi
      * @date 2022/3/20 19:24
      */
     public static Factor inference(ArrayList<Factor> factorList, ArrayList<Variable> queryVariables, ArrayList<Variable> orderedListOfHiddenVariables, ArrayList<Evidence> evidenceList) {
@@ -319,7 +322,7 @@ public class Bayesian {
             Factor factor = containsVariable.get(0);
             factorList.add(sumout(factor, variable));
             factor.getVariables().remove(variable);
-            System.out.println("After eliminate Variable : " + variable.getName() + " \nthe probability is " + factor.getProb() + "\n");
+            System.out.println("After eliminate Variable : " + variable.getName() + " \nthe probability is " + factor.printProb() + "\n");
         }
 
         //multiply by query variables
@@ -388,7 +391,7 @@ class Variable {
 
 
 /**
- * @author Siwen Sun
+ * @author Siwen Sun, Ran Shi
  * @date 2022/3/20 18:42
  * <p>
  * the Node
@@ -398,7 +401,6 @@ class Factor {
     ArrayList<Variable> variables;
     //probability table
     ArrayList<Double> prob;
-
 
     public Factor() {
         variables = new ArrayList<>();
@@ -428,6 +430,17 @@ class Factor {
 
     public ArrayList<Double> getProb() {
         return prob;
+    }
+
+    public String printProb(){
+        String result = "[ ";
+        for(int i=0;i<prob.size();i++){
+            String temp = String.format("%.5f", prob.get(i));
+            result += temp+" ";
+        }
+        result += "]";
+
+        return result;
     }
 
     public void setProb(ArrayList<Double> prob) {
