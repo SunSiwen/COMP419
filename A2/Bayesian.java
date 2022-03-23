@@ -202,8 +202,8 @@ public class Bayesian {
     /**
      * get the intersection of two lists
      *
-     * @param variables1 : variables of factot1
-     * @param variables2 : variables of factot2
+     * @param variables1 : variables of factor1
+     * @param variables2 : variables of factor2
      * @return java.util.ArrayList<Variable> : the intersection set
      * @author Siwen Sun
      * @date 2022/3/20 19:14
