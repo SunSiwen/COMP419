@@ -56,10 +56,10 @@ public class Bayesian {
         FP.getVariables().add(travel);
         FP.getVariables().add(fraud);
         FP.getVariables().add(fp);
-        FP.getProb().add(0.9);
-        FP.getProb().add(0.1);
         FP.getProb().add(0.99);
         FP.getProb().add(0.01);
+        FP.getProb().add(0.9);
+        FP.getProb().add(0.1);
         FP.getProb().add(0.1);
         FP.getProb().add(0.9);
         FP.getProb().add(0.1);
@@ -103,7 +103,7 @@ public class Bayesian {
         System.out.println("Question 2 :=====================");
         Factor inference = inference(factors, queryVariables, orderedListOfHiddenVariables, evidenceList);
         System.out.println("P(¬fraud | fp, ¬ip, crp) = " + inference.getProb().get(0));
-        System.out.println("P(+fraud | fp, ¬ip, crp) = " + inference.getProb().get(1));
+        System.out.println("P( fraud | fp, ¬ip, crp) = " + inference.getProb().get(1));
         System.out.println("*********************************");
 
     }
