@@ -11,6 +11,7 @@ public class A3 {
     public static void main(String[] args) {
 
         QLearningAgent RL = new QLearningAgent(); // for test
+        RL.qLearning();
 
         /*
 
