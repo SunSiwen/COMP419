@@ -15,57 +15,143 @@ import java.util.*;
 
 public class QLearningAgent {
 
+    private int bound = 15;
+    public double noise;
     private int rows, cols;
     private int[][] terminal, boulder;
     private int[] robotStart;
     private int depth, episodes;
-    private double alpha, discount, noise, transCost;
+    private double alpha, discount, transCost;
 
-    // State[][] grid; // to hold list of states
     QState[][] grid; // to hold list of states
-    private boolean testMode = true; // for test
+    private boolean testMode = false; // for test
 
     /**
      * Constructor
      * Takes a grid and runs value iteration for the specified number of iterations
      */
-    public QLearningAgent(){
+    public QLearningAgent() {
         inputGridConf();
         generateGrid();
-        if(testMode){
+        if (testMode) {
             printGridConf();
             printGrid(0);
         }
     }
 
 
-    public QLearningAgent(int x, int y, int step, String line, int goal){
+    public QLearningAgent(int x, int y, int step, String line, int goal) {
         inputGridConf();
-        if(0 <= x && x <= rows && 0 <= y && y <= cols){ // check edges
+        if (0 <= x && x <= rows && 0 <= y && y <= cols) { // check edges
             // reassigns the target variables
             episodes = step;
 
             generateGrid();
-            if(testMode){
+            if (testMode) {
                 printGrid(1);
             }
             // start Q-learning
             qLearning();
             printResult(x, y, line, goal);
-        }else{
+        } else {
             System.out.println(line + ": Invalid Input.");
         }
+    }
+
+
+    public double getQValue(int actionIndex, QState qState) {
+        int i = qState.getX();
+        int j = qState.getY();
+
+        QState invalid = new QState(-1, -1);
+        QState vk[] = new QState[4];
+
+//    private final String[] policy = {"East", "North", "West", "South"};
+        if (i > 0 && !grid[i - 1][j].isBoulder())
+            vk[2] = grid[i - 1][j];
+        else
+            vk[2] = invalid;
+        //east
+        if (i < rows - 1 && !grid[i + 1][j].isBoulder())
+            vk[0] = grid[i + 1][j];
+        else
+            vk[0] = invalid;
+        //south
+        if (j > 0 && !grid[i][j - 1].isBoulder())
+            vk[3] = grid[i][j - 1];
+        else
+            vk[3] = invalid;
+        //north
+        if (j < cols - 1 && !grid[i][j + 1].isBoulder())
+            vk[1] = grid[i][j + 1];
+        else
+            vk[1] = invalid;
+
+        int left = (actionIndex + 1) % 4;
+        int right = (actionIndex + 3) % 4;
+        double oldValue = qState.getActions().get(qState.getPolicy()[actionIndex]).getValue();
+        double goStraight = (1 - noise) * (discount * maxQ(vk[actionIndex]));
+
+        double goLeft = noise / 2 * (discount * maxQ(vk[left]));
+        double goRight = noise / 2 * (discount * maxQ(vk[right]));
+
+//        System.out.println(oldValue);
+        return (1 - alpha) * oldValue + alpha * (transCost + goStraight + goLeft + goRight);
 
     }
 
+    public static double maxQ(QState qState) {
+        double res = -9999.0;
+        for (QAction value : qState.getActions().values()) {
+            if (value.getValue() > res) {
+                res = value.getValue();
+            }
+        }
+//        if (res != 0) {
+//            System.out.println(res);
+//            try {
+//                Thread.sleep(1000000);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
+        return res;
+    }
+
+    public int getPolicy(QState qState) {
+        Random random = new Random();
+        int i = random.nextInt(100);
+        if (i < bound) {
+            return i % 4;
+        }
+
+        double maxValue = -9999.0;
+        int res = -1;
+
+        for (int j = 0; j < qState.getPolicy().length; j++) {
+            double value = getQValue(j, qState);
+
+//            if(value != 0){
+//                System.out.println(qState.getPolicy()[j]);
+//            }
+            if (value > maxValue) {
+                res = j;
+                maxValue = value;
+            }
+        }
+
+//        System.out.println("I am here in " + qState.getX() + " " + qState.getY() + " " + qState.getPolicy()[res] + " " + maxValue + " " + res);
+        return res;
+    }
 
     /**
      * Reads input from GridConf.txt, then loads variables
      */
-    private void inputGridConf(){
-        File file = new File("GridConf.txt");
+    private void inputGridConf() {
+        File file = new File("C:\\Users\\Administrator\\IdeaProjects\\COMP419\\A3\\GridConf.txt");
+//        File file = new File("GridConf.txt");
         BufferedReader bf = null;
-        try{
+        try {
             bf = new BufferedReader(new FileReader(file));
             // x=4
             String line = bf.readLine();
@@ -80,21 +166,21 @@ public class QLearningAgent {
             //Terminal={1={3,1,-1},2={3,2,1}}
             line = bf.readLine();
             s = line.split("=\\{|},|\\{|}|=|,");
-            int num = (s.length-1)/4;
+            int num = (s.length - 1) / 4;
             terminal = new int[num][3];
-            for(int i=0; i<num; i++) {
-                terminal[i][0] = Integer.parseInt(s[i*4+2]);
-                terminal[i][1] = Integer.parseInt(s[i*4+3]);
-                terminal[i][2] = Integer.parseInt(s[i*4+4]);
+            for (int i = 0; i < num; i++) {
+                terminal[i][0] = Integer.parseInt(s[i * 4 + 2]);
+                terminal[i][1] = Integer.parseInt(s[i * 4 + 3]);
+                terminal[i][2] = Integer.parseInt(s[i * 4 + 4]);
             }
             // Boulder={1={1,1}}
             line = bf.readLine();
             s = line.split("=\\{|},|\\{|}|=|,");
-            num = (s.length-1)/3;
+            num = (s.length - 1) / 3;
             boulder = new int[num][2];
-            for(int i=0;i<num;i++) {
-                boulder[i][0] = Integer.parseInt(s[i*3+2]);
-                boulder[i][1] = Integer.parseInt(s[i*3+3]);
+            for (int i = 0; i < num; i++) {
+                boulder[i][0] = Integer.parseInt(s[i * 3 + 2]);
+                boulder[i][1] = Integer.parseInt(s[i * 3 + 3]);
             }
             // RobotStartState={0,0}
             line = bf.readLine();
@@ -132,7 +218,7 @@ public class QLearningAgent {
             transCost = Double.parseDouble(s[1]);
 
             bf.close();
-        }catch(Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -144,12 +230,12 @@ public class QLearningAgent {
         System.out.println("x=" + rows);
         System.out.println("y=" + cols);
         String str = "Terminal=[";
-        for(int i=0; i<terminal.length; i++){
+        for (int i = 0; i < terminal.length; i++) {
             str = str + Arrays.toString(terminal[i]);
         }
         System.out.println(str + "]");
         str = "Boulder=[";
-        for(int i=0; i<boulder.length; i++){
+        for (int i = 0; i < boulder.length; i++) {
             str = str + Arrays.toString(boulder[i]);
         }
         System.out.println(str + "]");
@@ -166,142 +252,135 @@ public class QLearningAgent {
     /**
      * Generates the grid
      */
-    private void generateGrid(){
+    private void generateGrid() {
         grid = new QState[rows][cols];
-        for(int i=0; i<rows; i++){
-            for(int j=0; j<cols; j++){
-                grid[i][j] = new QState(i,j);
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                grid[i][j] = new QState(i, j);
             }
         }
-        for(int i=0; i<terminal.length; i++){
+        for (int i = 0; i < terminal.length; i++) {
             int x = terminal[i][0];
-            int y = convertY(terminal[i][1]);
+            int y = terminal[i][1];
             grid[x][y].setTerminal(terminal[i][2]);
         }
-        for(int i=0; i<boulder.length; i++){
+        for (int i = 0; i < boulder.length; i++) {
             int x = boulder[i][0];
-            int y = convertY(boulder[i][1]);
+            int y = boulder[i][1];
             grid[x][y].setBoulder();
         }
     }
 
-    private void printGrid(int e){
+    private void printGrid(int e) {
         System.out.println("episode=" + e);
         String[] graph = new String[cols];
-        for(int i=0; i<cols; i++){
+        for (int i = cols - 1; i >= 0; i--) {
             graph[i] = "";
-            for(int j=0; j<rows; j++){
+            for (int j = 0; j < rows; j++) {
                 graph[i] = graph[i] + grid[j][i].drawCurrState();
             }
         }
-        for(int i=0; i<cols; i++){
+        for (int i = cols - 1; i >= 0; i--) {
             System.out.println(graph[i]);
         }
     }
 
-    private int convertY(int y){ // since graph[0] is the bottom row
-        int newY = cols-1-y;
-        return newY;
-    }
 
     /**
      * Prints result of this query
-     * @param x : x from results.txt
-     * @param y : y from results.txt
+     *
+     * @param x    : x from results.txt
+     * @param y    : y from results.txt
      * @param line : current line read from results.txt
      * @param goal : query from results.txt
      */
-    private void printResult(int x, int y, String line, int goal){
-        y = convertY(y);
+    private void printResult(int x, int y, String line, int goal) {
         // "stateValue"=0, "bestPolicy"=1, "bestQValue"=2;
-        if(goal == 0) {
+        if (goal == 0) {
             double v = Double.parseDouble(String.format("%.2f", grid[x][y].getMaxValue()));
             System.out.println(line + ": " + v);
-        }else if(goal == 1)
+        } else if (goal == 1)
             System.out.println(line + ": Go " + grid[x][y].getPolicy());
         else
             System.out.println(line + ": Invalid Input.");
     }
 
-    public void qLearning(){
-        for(int i=0; i<episodes;i++){
+    public void qLearning() {
+        for (int i = 0; i < episodes; i++) {
             // set initial position
-            int currX, currY;
+            int currX;
+            int currY;
             currX = robotStart[0];
             currY = robotStart[1];
 
-            while(true){
+            while (true) {
                 // check if the move is valid
-                int direction = getPolicy();
-                while(!checkValidMove(currX, currY, direction))
-                    direction = getPolicy();
+                int direction = getPolicy(grid[currX][currY]);
+//                while (!checkValidMove(currX, currY, direction))
+//                    direction = getPolicy();
 
                 // set next position
-                int nextX = currX, nextY = currY;
-                switch (direction){
+                int nextX = currX;
+                int nextY = currY;
+                switch (direction) {
                     case 0: // go east
-                        nextX = currX+1;
+                        nextX = currX + 1 == grid.length || grid[currX + 1][currY].isBoulder() ? currX : currX + 1;
                         break;
                     case 1: // go north
-                        nextY = currY-1;
+                        nextY = currY + 1 == grid[0].length || grid[currX][currY + 1].isBoulder() ? currY : currY + 1;
                         break;
                     case 2: // go west
-                        nextX = currX-1;
+                        nextX = currX == 0 || grid[currX - 1][currY].isBoulder() ? currX : currX - 1;
                         break;
                     case 3: // go south
-                        nextY = currY+1;
+                        nextY = currY == 0 || grid[currX][currY - 1].isBoulder() ? currY : currY - 1;
                         break;
                 }
 
                 // calculate q value
-                double qValue = grid[currX][currY].getValue(direction); // Q(s,a)
-                double qValuePrime = grid[nextX][nextY].getMaxValue(); // max Q(s',a')
-                qValue = (1-alpha) * qValue + alpha * (transCost + discount * qValuePrime);
-                grid[currX][currY].updateValue(direction, qValue);
+//                double qValue = grid[currX][currY].getValue(direction); // Q(s,a)
+//                double qValuePrime = grid[nextX][nextY].getMaxValue(); // max Q(s',a')
+//                qValue = (1 - alpha) * qValue + alpha * (transCost + discount * qValuePrime);
 
+                update(currX, currY, direction, this);
                 // update position
                 currX = nextX;
                 currY = nextY;
 
-                if(grid[currX][currY].isTerminal()){
+                if (grid[currX][currY].isTerminal()) {
                     // calculate q value for exit
+                    System.out.println("hello  i am " + currX + " " + currY);
                     break;
                 }
             }
+            printGrid(i);
         }
     }
 
-    /**
-     * Gets random move
-     * @return direction, where east=0, north=1, west=2, south=3
-     */
-    private int getPolicy(){
-
-        Random ra =new Random();
-        int p = ra.nextInt(4);
-        return p;
+    private void update(int currX, int currY, int direction, QLearningAgent qLearningAgent) {
+        grid[currX][currY].updateValue(direction, qLearningAgent);
     }
 
-    private boolean checkValidMove(int currX, int currY, int direction){ // return true if this move is valid
+    private boolean checkValidMove(int currX, int currY, int direction) { // return true if this move is valid
         boolean result = false;
-        switch (direction){
+        switch (direction) {
             case 0: // go east
-                if(currX<rows-1 && !grid[currX+1][currY].isBoulder())
+                if (currX < rows - 1 && !grid[currX + 1][currY].isBoulder())
                     result = true;
                 break;
 
             case 1: // go north
-                if(currY>0 && !grid[currX][currY-1].isBoulder())
+                if (currY > 0 && !grid[currX][currY - 1].isBoulder())
                     result = true;
                 break;
 
             case 2: // go west
-                if(currX>0 && !grid[currX-1][currY].isBoulder())
+                if (currX > 0 && !grid[currX - 1][currY].isBoulder())
                     result = true;
                 break;
 
             case 3: // go south
-                if(currY<cols-1 && !grid[currX][currY+1].isBoulder())
+                if (currY < cols - 1 && !grid[currX][currY + 1].isBoulder())
                     result = true;
                 break;
         }
@@ -311,86 +390,119 @@ public class QLearningAgent {
 
 }
 
+class QAction {
+    private String policy;
+    private QState state;
+    private double value = 0.0;
 
-class QState{
+    public QAction(String policy, QState state) {
+        this.policy = policy;
+        this.state = state;
+    }
+
+    public double getValue() {
+        return value;
+    }
+
+    public void setValue(double value) {
+        this.value = value;
+    }
+}
+
+class QState {
 
     private int x, y; // position
-    private double[] value; // value for each direction
     private final String[] policy = {"East", "North", "West", "South"};
     private double maxValue;
     private int maxIndex; // policy
     private boolean boulder, terminal;
+    private HashMap<String, QAction> actions;
 
-    public QState(int x, int y){
+    public QState(int x, int y) {
         this.x = x;
         this.y = y;
-        value = new double[4];
         maxValue = 0; // default
         maxIndex = 1; // default
         boulder = false;
         terminal = false;
+        actions = new HashMap<>();
+        actions.put(this.policy[0], new QAction(this.policy[0], this));
+        actions.put(this.policy[1], new QAction(this.policy[1], this));
+        actions.put(this.policy[2], new QAction(this.policy[2], this));
+        actions.put(this.policy[3], new QAction(this.policy[3], this));
     }
 
-    public double getMaxValue(){
+    public double getMaxValue() {
         return maxValue;
     }
 
-    public double getValue(int direction){
-        return value[direction];
+
+    public void updateValue(int direction, QLearningAgent qLearningAgent) {
+        this.actions.get(policy[direction]).setValue(qLearningAgent.getQValue(direction, this));
+//        if (this.actions.get(policy[direction]).getValue() > maxValue) { // update max value
+        maxValue = this.actions.get(policy[direction]).getValue();
+        System.out.println("max in update is " + maxValue + " direction is " + direction);
+        maxIndex = direction;
+//        }
     }
 
-    public void updateValue(int direction, double newValue){
-        value[direction] = newValue;
-        if(newValue > maxValue){ // update max value
-            maxValue = newValue;
-            maxIndex = direction;
-        }
+    public int getX() {
+        return x;
     }
 
-    public String getPolicy(){
-        if(maxIndex >= 0 && canProcessVI())
-            return policy[maxIndex];
-        else
-            return "-";
+    public int getY() {
+        return y;
     }
 
-    public boolean setBoulder(){
+
+    public String[] getPolicy() {
+        return policy;
+    }
+
+    public int getMaxIndex() {
+        return maxIndex;
+    }
+
+    public HashMap<String, QAction> getActions() {
+        return actions;
+    }
+
+
+    public boolean setBoulder() {
         boulder = true;
         maxValue = 0;
         maxIndex = -1;
         return true;
     }
 
-    public boolean setTerminal(double v){
+    public boolean setTerminal(double v) {
         terminal = true;
         maxValue = v;
         maxIndex = -1;
+        getActions().values().stream().forEach(k -> k.setValue(v));
         return true;
     }
 
-    public boolean isBoulder(){
+    public boolean isBoulder() {
         return boulder;
     }
 
-    public boolean isTerminal(){
+    public boolean isTerminal() {
         return terminal;
     }
 
-    public boolean canProcessVI(){
-        return !terminal && !boulder;
-    }
 
-    public String drawCurrState(){
+    public String drawCurrState() {
         String str = "  ";
         if (isBoulder()) {
             str = str + " Wall ";
         } else {
             double v = Double.parseDouble(String.format("%.2f", maxValue));
             str = str + v + "[";
-            if(isTerminal()) {
+            if (isTerminal()) {
                 str = str + "T]";
             } else
-                str = str + getPolicy().charAt(0) + "]";
+                str = str + getPolicy()[getMaxIndex()].charAt(0) + "]";
         }
         str = str + "  ";
 
