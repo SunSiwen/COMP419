@@ -15,7 +15,7 @@ import java.util.*;
 
 public class QLearningAgent {
 
-    private int bound = 15;
+    private double bound = 0;
     public double noise;
     private int rows, cols;
     private int[][] terminal, boulder;
@@ -31,7 +31,7 @@ public class QLearningAgent {
      * Takes a grid and runs value iteration for the specified number of iterations
      */
     public QLearningAgent() {
-        inputGridConf();
+        inputGridConf("GridConf.txt");
         generateGrid();
         if (testMode) {
             printGridConf();
@@ -40,9 +40,10 @@ public class QLearningAgent {
     }
 
 
-    public QLearningAgent(int x, int y, int step, String line, int goal) {
-        inputGridConf();
-        if (0 <= x && x <= rows && 0 <= y && y <= cols) { // check edges
+    public QLearningAgent(int x, int y, int step, String line, int goal, String file, double epsilon) {
+        bound = epsilon;
+        inputGridConf(file);
+        if (0 <= x && x < rows && 0 <= y && y < cols) { // check edges
             // reassigns the target variables
             episodes = step;
 
@@ -59,6 +60,15 @@ public class QLearningAgent {
     }
 
 
+    /**
+     * GET THE QVALUE OF A STATE BY AN ACTION
+     *
+     * @param actionIndex : ACTION
+     * @param qState      : STATE
+     * @return double : QVALUE
+     * @author Siwen Sun
+     * @date 2022/4/24 14:30
+     */
     public double getQValue(int actionIndex, QState qState) {
         int i = qState.getX();
         int j = qState.getY();
@@ -95,11 +105,18 @@ public class QLearningAgent {
         double goLeft = noise / 2 * (discount * maxQ(vk[left]));
         double goRight = noise / 2 * (discount * maxQ(vk[right]));
 
-//        System.out.println(oldValue);
         return (1 - alpha) * oldValue + alpha * (transCost + goStraight + goLeft + goRight);
 
     }
 
+    /**
+     * GET THE MAXQ OF A STATE
+     *
+     * @param qState : A STATE
+     * @return double : MAXQ
+     * @author Siwen Sun
+     * @date 2022/4/24 14:30
+     */
     public static double maxQ(QState qState) {
         double res = -9999.0;
         for (QAction value : qState.getActions().values()) {
@@ -107,48 +124,50 @@ public class QLearningAgent {
                 res = value.getValue();
             }
         }
-//        if (res != 0) {
-//            System.out.println(res);
-//            try {
-//                Thread.sleep(1000000);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
         return res;
     }
 
+    /**
+     * DECIDE THE ACTION FORM A STATE, I USE EPSILON-GREEDY
+     *
+     * @param qState : A STATE
+     * @return int : ACTION
+     * @author Siwen Sun
+     * @date 2022/4/24 14:31
+     */
     public int getPolicy(QState qState) {
         Random random = new Random();
         int i = random.nextInt(100);
-        if (i < bound) {
+        if (i < bound * 100) {
             return i % 4;
         }
 
         double maxValue = -9999.0;
-        int res = -1;
 
+        ArrayList<Integer> res = new ArrayList<>();
+        res.add(0);
         for (int j = 0; j < qState.getPolicy().length; j++) {
             double value = getQValue(j, qState);
 
-//            if(value != 0){
-//                System.out.println(qState.getPolicy()[j]);
-//            }
             if (value > maxValue) {
-                res = j;
+                res.clear();
+                res.add(j);
                 maxValue = value;
+            } else if (value == maxValue) {
+                res.add(j);
             }
         }
 
-//        System.out.println("I am here in " + qState.getX() + " " + qState.getY() + " " + qState.getPolicy()[res] + " " + maxValue + " " + res);
-        return res;
+        int direction = res.get(i % res.size());
+//        System.out.println("I am here in " + qState.getX() + " " + qState.getY() + " " + qState.getPolicy()[direction] + " " + maxValue + " " + direction);
+        return direction;
     }
 
     /**
      * Reads input from GridConf.txt, then loads variables
      */
-    private void inputGridConf() {
-        File file = new File("C:\\Users\\Administrator\\IdeaProjects\\COMP419\\A3\\GridConf.txt");
+    private void inputGridConf(String path) {
+        File file = new File(path);
 //        File file = new File("GridConf.txt");
         BufferedReader bf = null;
         try {
@@ -297,12 +316,16 @@ public class QLearningAgent {
     private void printResult(int x, int y, String line, int goal) {
         // "stateValue"=0, "bestPolicy"=1, "bestQValue"=2;
         if (goal == 0) {
+            double v = grid[x][y].getMaxValue() * (1 - bound) + grid[x][y].getAllValue() * bound / 4;
+            System.out.println(line + ": " + v);
+        } else if (goal == 1) {
+            System.out.println(line + ": Go " + grid[x][y].getPolicy()[grid[x][y].getMaxIndex()]);
+        } else if (goal == 2) {
             double v = Double.parseDouble(String.format("%.2f", grid[x][y].getMaxValue()));
             System.out.println(line + ": " + v);
-        } else if (goal == 1)
-            System.out.println(line + ": Go " + grid[x][y].getPolicy());
-        else
+        } else {
             System.out.println(line + ": Invalid Input.");
+        }
     }
 
     public void qLearning() {
@@ -316,10 +339,7 @@ public class QLearningAgent {
             while (true) {
                 // check if the move is valid
                 int direction = getPolicy(grid[currX][currY]);
-//                while (!checkValidMove(currX, currY, direction))
-//                    direction = getPolicy();
 
-                // set next position
                 int nextX = currX;
                 int nextY = currY;
                 switch (direction) {
@@ -337,10 +357,6 @@ public class QLearningAgent {
                         break;
                 }
 
-                // calculate q value
-//                double qValue = grid[currX][currY].getValue(direction); // Q(s,a)
-//                double qValuePrime = grid[nextX][nextY].getMaxValue(); // max Q(s',a')
-//                qValue = (1 - alpha) * qValue + alpha * (transCost + discount * qValuePrime);
 
                 update(currX, currY, direction, this);
                 // update position
@@ -349,11 +365,11 @@ public class QLearningAgent {
 
                 if (grid[currX][currY].isTerminal()) {
                     // calculate q value for exit
-                    System.out.println("hello  i am " + currX + " " + currY);
+//                    System.out.println("hello  i am " + currX + " " + currY);
                     break;
                 }
             }
-            printGrid(i);
+//            printGrid(i);
         }
     }
 
@@ -439,11 +455,9 @@ class QState {
 
     public void updateValue(int direction, QLearningAgent qLearningAgent) {
         this.actions.get(policy[direction]).setValue(qLearningAgent.getQValue(direction, this));
-//        if (this.actions.get(policy[direction]).getValue() > maxValue) { // update max value
         maxValue = this.actions.get(policy[direction]).getValue();
-        System.out.println("max in update is " + maxValue + " direction is " + direction);
+//        System.out.println("max in update is " + maxValue + " direction is " + direction);
         maxIndex = direction;
-//        }
     }
 
     public int getX() {
@@ -507,5 +521,13 @@ class QState {
         str = str + "  ";
 
         return str;
+    }
+
+    public double getAllValue() {
+        double res = 0.0;
+        for (QAction action : actions.values()) {
+            res += action.getValue();
+        }
+        return res;
     }
 }

@@ -1,7 +1,8 @@
-import java.io.File;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
-import java.util.*;
+import java.util.Arrays;
+
 
 public class A3 {
     // Method={MDP,RL}, query={stateValue,bestPolicy,bestQValue}.
@@ -10,15 +11,19 @@ public class A3 {
 
     public static void main(String[] args) {
 
-        QLearningAgent RL = new QLearningAgent(); // for test
-        RL.qLearning();
+        String gridConf = args[0];
+        String results = args[1];
+        double epsilon = args[2] == null ? 0 : Double.parseDouble(args[2]);
 
-        /*
+
+//        QLearningAgent RL = new QLearningAgent(); // for test
+//        RL.qLearning();
+
 
         // read results.txt
-        File file = new File("results.txt");
+        File file = new File(results);
         BufferedReader bf = null;
-        try{
+        try {
             bf = new BufferedReader(new FileReader(file));
             String line;
 
@@ -31,24 +36,23 @@ public class A3 {
                 int steps = Integer.parseInt(s[2]);
                 int met = Arrays.asList(method).indexOf(s[3]);
                 int goal = Arrays.asList(query).indexOf(s[4]);
-                if(goal > -1){
-                    if(met == 0){ // MDP
-                        ValueIterationAgent MDP = new ValueIterationAgent(x, y, steps, line, goal);
-                    }else if(met == 1){ //RL
-                        QLearningAgent RL = new QLearningAgent(x, y, steps, line, goal);
-                    }else{
+                if (goal > -1) {
+                    if (met == 0) { // MDP
+                        ValueIterationAgent MDP = new ValueIterationAgent(x, y, steps, line, goal, gridConf);
+                    } else if (met == 1) { //RL
+                        QLearningAgent RL = new QLearningAgent(x, y, steps, line, goal, gridConf, epsilon);
+                    } else {
                         System.out.println(line + ": Invalid Input.");
                     }
                 }
             }
             bf.close();
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        ValueIterationAgent MDP = new ValueIterationAgent();
+//        ValueIterationAgent MDP = new ValueIterationAgent();
 
-         */
 
     }
 
