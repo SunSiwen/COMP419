@@ -139,7 +139,7 @@ public class QLearningAgent {
         Random random = new Random();
         int i = random.nextInt(100);
         if (i < bound * 100) {
-            return i % 4;
+            return random.nextInt(100) % 4;
         }
 
         double maxValue = -9999.0;
@@ -158,7 +158,7 @@ public class QLearningAgent {
             }
         }
 
-        int direction = res.get(i % res.size());
+        int direction = res.get(random.nextInt(100) % res.size());
 //        System.out.println("I am here in " + qState.getX() + " " + qState.getY() + " " + qState.getPolicy()[direction] + " " + maxValue + " " + direction);
         return direction;
     }
