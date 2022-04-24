@@ -44,7 +44,7 @@ public class ValueIterationAgent {
 
     public ValueIterationAgent(int x, int y, int step, String line, int goal, String file) {
         inputGridConf(file);
-        if (0 <= x && x <= rows && 0 <= y && y <= cols) { // check edges
+        if (0 <= x && x < rows && 0 <= y && y < cols) { // check edges
             // reassigns the target variables
             depth = step;
 
